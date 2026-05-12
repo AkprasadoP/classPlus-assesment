@@ -1,22 +1,41 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Mail, UserCircle } from 'lucide-react-native';
+import { Mail, UserCircle, Palette } from 'lucide-react-native';
+import { signInWithPopup } from 'firebase/auth';
 import { ThemeColors } from '../../constants/Colors';
 import { useUserStore } from '../../store/userStore';
-import { mockAuth } from '../../services/firebase';
+import { mockAuth, auth, googleProvider } from '../../services/firebase';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { login } = useUserStore();
 
-  const handleMockLogin = async () => {
+  const handleGuestLogin = async () => {
      try {
        const res = await mockAuth.signInAnonymously();
        login(res.user.uid);
        router.replace('/(auth)/profile-setup');
      } catch(err) {
        console.log(err);
+     }
+  };
+
+  const handleGoogleLogin = async () => {
+     try {
+       if (auth && googleProvider) {
+         // Real Firebase OAuth Flow
+         const result = await signInWithPopup(auth, googleProvider);
+         login(result.user.uid);
+         router.replace('/(auth)/profile-setup');
+       } else {
+         // Fallback to mock if no config
+         console.warn('Real Auth requires Firebase config. Using mock.');
+         alert('Firebase configuration missing! Please add your Firebase API keys to the .env file to enable Google Sign-In.');
+       }
+     } catch(err) {
+       console.error('Auth Error:', err);
+       alert('Authentication failed. Please check your config.');
      }
   };
 
@@ -28,26 +47,26 @@ export default function LoginScreen() {
 
         <View style={styles.logoContainer}>
            <View style={styles.logoCircle}>
-              <Text style={styles.logoIcon}>🎨</Text>
+              <Palette color="#FFF" size={40} />
            </View>
            <Text style={styles.title}>GreetingMaker</Text>
            <Text style={styles.subtitle}>Create stunning personalized wishes</Text>
         </View>
 
         <View style={styles.buttonGroup}>
-          <TouchableOpacity style={[styles.button, styles.googleBtn]} onPress={handleMockLogin}>
+          <TouchableOpacity style={[styles.button, styles.googleBtn]} onPress={handleGoogleLogin}>
             <View style={styles.googleIconCircle}>
               <Text style={styles.googleG}>G</Text>
             </View>
             <Text style={styles.btnTextLight}>Continue with Google</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.button, styles.emailBtn]} onPress={handleMockLogin}>
+          <TouchableOpacity style={[styles.button, styles.emailBtn]} onPress={handleGuestLogin}>
             <Mail size={18} color="#FFF" style={{ marginRight: 10 }} />
             <Text style={styles.btnTextLight}>Continue with Email</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.guestBtn} onPress={handleMockLogin}>
+          <TouchableOpacity style={styles.guestBtn} onPress={handleGuestLogin}>
             <UserCircle size={16} color={ThemeColors.accent} style={{ marginRight: 6 }} />
             <Text style={styles.guestText}>Browse as Guest</Text>
           </TouchableOpacity>
@@ -98,9 +117,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 16,
     elevation: 8,
-  },
-  logoIcon: {
-    fontSize: 42,
   },
   title: {
     fontSize: 34,

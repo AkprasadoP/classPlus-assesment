@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -10,13 +11,15 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
-let app, db: any, storage: any;
+let app: any, db: any, storage: any, auth: any, googleProvider: any;
 
 try {
   if (firebaseConfig.apiKey) {
     app = initializeApp(firebaseConfig);
     db = getFirestore(app);
     storage = getStorage(app);
+    auth = getAuth(app);
+    googleProvider = new GoogleAuthProvider();
     console.log('Firebase initialized successfully.');
   } else {
     console.warn('Firebase configuration missing. Using mock fallback.');
@@ -25,7 +28,7 @@ try {
   console.warn('Firebase initialization failed. Using mock fallback.', error);
 }
 
-export { db, storage };
+export { db, storage, auth, googleProvider };
 
 export const mockAuth = {
   signInAnonymously: () => Promise.resolve({ user: { uid: 'guest123' } }),
