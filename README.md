@@ -4,7 +4,7 @@
 
 A React Native (Expo) application for creating personalized greeting cards with automatic profile overlay.
 
-**[🎥 Watch Demo Video](YOUR_YOUTUBE_LINK_HERE)**
+**[🎥 Watch Demo Video](https://drive.google.com/file/d/1njiCWt6EKurIt57Cy4XuJgYU4c0LcTA_/view?usp=drive_link)**
 
 ## 🌟 Features
 
