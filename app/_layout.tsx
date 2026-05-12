@@ -43,7 +43,7 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const { isLoggedIn } = useUserStore();
+  const { isLoggedIn, name } = useUserStore();
   const segments = useSegments();
   const router = useRouter();
 
@@ -53,12 +53,20 @@ function RootLayoutNav() {
     if (!rootNavigationState?.key) return;
 
     const inAuthGroup = segments[0] === '(auth)';
+    
     if (!isLoggedIn && !inAuthGroup) {
       router.replace('/(auth)/login');
-    } else if (isLoggedIn && inAuthGroup) {
-      router.replace('/(tabs)/');
+    } else if (isLoggedIn) {
+      const needsSetup = name === 'New User' || name === 'Guest User';
+      const isProfileSetup = segments[1] === 'profile-setup';
+
+      if (needsSetup && !isProfileSetup) {
+        router.replace('/(auth)/profile-setup');
+      } else if (!needsSetup && inAuthGroup) {
+        router.replace('/(tabs)/');
+      }
     }
-  }, [isLoggedIn, segments, rootNavigationState?.key]);
+  }, [isLoggedIn, segments, rootNavigationState?.key, name]);
 
   // Always use dark theme
   const customDark = {
